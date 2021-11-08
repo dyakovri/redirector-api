@@ -5,9 +5,7 @@ services:
   api:
     build: .
     restart: always
-    environment:
-      DB_DSN: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
-      OPENAPI_PREFIX: '/api'
+    env_file: .env
     networks:
       frontend:
         aliases:
@@ -19,8 +17,8 @@ services:
   postgres:
     image: postgres
     restart: always
+    env_file: .env
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres:/var/lib/postgresql/data
@@ -36,4 +34,4 @@ networks:
 
 volumes:
   postgres:
-    name: shopping_list-data
+    name: redirect-data
