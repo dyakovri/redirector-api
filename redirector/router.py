@@ -42,6 +42,8 @@ def create_route(secret: str, url_from: str):
     status_code=307,
 )
 def redirect(url_from):
+    if url_from == '':
+        return RedirectResponse('/ui/')
     redir_obj = (
         db.session.query(Redirect).filter(Redirect.url_from == url_from).one_or_none()
     )
