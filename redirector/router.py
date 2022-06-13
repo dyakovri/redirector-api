@@ -20,7 +20,7 @@ def create_route(
     logger.debug(user)
     if db.session.query(Redirect).filter(Redirect.url_from == url_from).one_or_none():
         raise HTTPException(409, "Already exists")
-    redir_obj = Redirect(url_from=url_from, url_to=data.url_to)
+    redir_obj = Redirect(url_from=url_from, url_to=data.url_to, user=user)
     db.session.add(redir_obj)
     db.session.commit()
     return "ok"
@@ -42,7 +42,7 @@ def create_route(url_from: str, secret: str = Depends(auth_schema)):
 
 @router.api_route(
     "/{url_from:path}",
-    methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    methods=["GET"],
     status_code=307,
 )
 def redirect(url_from):

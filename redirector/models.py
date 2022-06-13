@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 
 from sqlalchemy import Column, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.sql.sqltypes import DateTime, Integer, String
 
@@ -24,6 +25,8 @@ class RedirectorUser(BaseModel):
         DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
+    redirects = relationship("Redirect", back_populates="user")
+
     def __repr__(self) -> str:
         return f"{self.username}"
 
@@ -37,3 +40,5 @@ class Redirect(BaseModel):
     updated_at = Column(
         DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
     )
+
+    user = relationship("RedirectorUser", back_populates="redirects")

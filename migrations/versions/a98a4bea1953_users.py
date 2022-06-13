@@ -38,6 +38,7 @@ def upgrade():
     op.create_foreign_key(
         "redirect_user_id_fkey", "redirect", "redirector_user", ["user_id"], ["id"]
     )
+    op.alter_column("redirect", "user_id", nullable=False)
 
 
 def downgrade():

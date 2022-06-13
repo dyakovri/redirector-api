@@ -3,3 +3,5 @@ fastapi
 fastapi-sqlalchemy
 psycopg2-binary
 alembic
+pydantic[dotenv]
+pyjwt
