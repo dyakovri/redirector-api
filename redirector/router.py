@@ -1,3 +1,4 @@
+from asyncio.log import logger
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_sqlalchemy import db
 from starlette.responses import RedirectResponse, Response
@@ -16,6 +17,7 @@ def create_route(
     url_from: str, data: NewRedirectUrl, secret: str = Depends(auth_schema)
 ):
     user = validate_user(secret)
+    logger.debug(user)
     if db.session.query(Redirect).filter(Redirect.url_from == url_from).one_or_none():
         raise HTTPException(409, "Already exists")
     redir_obj = Redirect(url_from=url_from, url_to=data.url_to)
@@ -27,6 +29,7 @@ def create_route(
 @router.delete("/url/{url_from:path}", status_code=204)
 def create_route(url_from: str, secret: str = Depends(auth_schema)):
     user = validate_user(secret)
+    logger.debug(user)
     redir_obj = (
         db.session.query(Redirect).filter(Redirect.url_from == url_from).one_or_none()
     )
