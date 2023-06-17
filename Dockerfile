@@ -1,4 +1,4 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11
 ENV APP_NAME=redirector
 ENV APP_MODULE=${APP_NAME}.main:app
 
