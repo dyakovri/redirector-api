@@ -33,14 +33,14 @@ class RedirectFact(BaseModel):
 
     user_agent = Column(String, nullable=False)
 
-    browser_family = Column(String, nullable=False)
-    browser_version = Column(String, nullable=False)
+    browser_family = Column(String)
+    browser_version = Column(String)
 
-    os_family = Column(String, nullable=False)
-    os_version = Column(String, nullable=False)
+    os_family = Column(String)
+    os_version = Column(String)
 
-    device_family = Column(String, nullable=False)
-    device_brand = Column(String, nullable=False)
-    device_model = Column(String, nullable=False)
+    device_family = Column(String)
+    device_brand = Column(String)
+    device_model = Column(String)
 
     link = relationship("Link", back_populates="redirects")
