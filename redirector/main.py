@@ -6,7 +6,11 @@ from .router import router
 from .settings import get_settings
 
 app = FastAPI()
-app.add_middleware(DBSessionMiddleware, db_url=get_settings().DB_DSN)
+app.add_middleware(
+    DBSessionMiddleware,
+    db_url=str(get_settings().DB_DSN),
+    engine_args={"pool_pre_ping": True, "isolation_level": "AUTOCOMMIT"},
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
