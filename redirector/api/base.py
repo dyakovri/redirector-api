@@ -5,17 +5,22 @@ from fastapi_sqlalchemy import DBSessionMiddleware
 from redirector.settings import get_settings
 from redirector import __version__
 
+
+settings = get_settings()
+
+
 app = FastAPI(
     title="Redirector",
     description="App to shorten, brand and track links",
     version=__version__,
     openapi_url="/api/openapi.json",
     docs_url="/api/docs",
-    redoc_url="/api/redoc",
+    redoc_url=None,
+    swagger_ui_parameters={"persistAuthorization": True},
 )
 app.add_middleware(
     DBSessionMiddleware,
-    db_url=str(get_settings().DB_DSN),
+    db_url=str(settings.db_dsn),
     engine_args={"pool_pre_ping": True},
 )
 app.add_middleware(

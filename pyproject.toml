@@ -4,8 +4,10 @@ description = "API for redirector service"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aiohttp>=3.12.15",
     "alembic>=1.16.4",
     "fastapi>=0.116.1",
+    "fastapi-auth-oidc>=0.1.4",
     "fastapi-sqlalchemy>=0.2.1",
     "psycopg2-binary>=2.9.10",
     "pydantic-settings>=2.10.1",
@@ -15,7 +17,10 @@ dependencies = [
 dynamic = ["version"]
 
 [tool.setuptools.dynamic]
-version = {attr = "oidc_exchange.__version__"}
+version = {attr = "redirector.__version__"}
+
+[tool.setuptools]
+packages = ["redirector"]
 
 [dependency-groups]
 dev = [

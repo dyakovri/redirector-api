@@ -1,14 +1,23 @@
 from datetime import datetime
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query
 from fastapi_sqlalchemy import db
-from redirector.exceptions.link import LinkNotFoundException, LinkAlreadyExistsException
-from redirector.models import Link
 from pydantic import AnyHttpUrl, BaseModel, TypeAdapter
+
+from redirector.api.auth import IDToken, auth_user
+from redirector.exceptions.link import LinkAlreadyExistsException, LinkNotFoundException
+from redirector.models import Link
 
 router = APIRouter()
 
 
 # GET
+class LinkRequest(BaseModel):
+    my: bool = False
+    user: str | None = None
+
+
 class LinkResponse(BaseModel):
     url_from: AnyHttpUrl | str
     url_to: AnyHttpUrl
@@ -21,7 +30,12 @@ class LinkListResponse(BaseModel):
 
 
 @router.get("")
-async def get_links() -> LinkListResponse:
+async def get_links(
+    query: Annotated[LinkRequest, Query()],
+    user: Annotated[IDToken | None, Depends(auth_user)],
+) -> LinkListResponse:
+    if not user:
+        raise Exception("Unauthorized")
     links = db.session.query(Link).all()
     return LinkListResponse(
         items=TypeAdapter(list[LinkResponse]).validate_python(links, from_attributes=True),
@@ -40,7 +54,12 @@ class PostLinkResponse(LinkResponse):
 
 
 @router.put("")
-async def create_link(json: PostLinkRequest) -> PostLinkResponse:
+async def create_link(
+    json: PostLinkRequest,
+    user: Annotated[IDToken | None, Depends(auth_user)],
+) -> PostLinkResponse:
+    if not user:
+        raise Exception("Unauthorized")
     new_link = db.session.query(Link).filter(Link.url_from == str(json.url_from)).one_or_none()
     if new_link is not None and not json.force:
         raise LinkAlreadyExistsException(json.url_from)
@@ -58,7 +77,12 @@ class DeleteLinkRequest(BaseModel):
 
 
 @router.delete("", status_code=204)
-async def delete_link(json: DeleteLinkRequest):
+async def delete_link(
+    json: DeleteLinkRequest,
+    user: Annotated[IDToken | None, Depends(auth_user)],
+):
+    if not user:
+        raise Exception("Unauthorized")
     link = db.session.query(Link).filter(Link.url_from == str(json.url_from)).one_or_none()
     if not link:
         raise LinkNotFoundException(json.url_from)

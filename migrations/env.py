@@ -35,7 +35,7 @@ def run_migrations_offline():
 
     """
     context.configure(
-        url=str(settings.DB_DSN),
+        url=str(settings.db_dsn),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -53,7 +53,7 @@ def run_migrations_online():
 
     """
     configuration: dict[str, str] = config.get_section(config.config_ini_section) or {}
-    configuration["sqlalchemy.url"] = str(settings.DB_DSN)
+    configuration["sqlalchemy.url"] = str(settings.db_dsn)
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
