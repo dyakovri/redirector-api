@@ -1,5 +1,5 @@
-import uvicorn
+from .main import main
 
-from .main import app
 
-uvicorn.run(app)
+if __name__ == "__main__":
+    main()
