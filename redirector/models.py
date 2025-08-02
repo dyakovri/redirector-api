@@ -1,9 +1,8 @@
 from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import ForeignKey
 from sqlalchemy.ext.declarative import as_declarative
-from sqlalchemy.sql.sqltypes import DateTime, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, mapped_column, Mapped
 
 
 @as_declarative()
@@ -14,11 +13,11 @@ class BaseModel:
 class Link(BaseModel):
     __tablename__ = "link"
 
-    id = Column(Integer, primary_key=True)
-    url_from = Column(String, nullable=False, unique=True)
-    url_to = Column(String, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    url_from: Mapped[str] = mapped_column(unique=True)
+    url_to: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, onupdate=datetime.utcnow)
 
     redirects = relationship("RedirectFact", back_populates="link")
 
@@ -26,21 +25,21 @@ class Link(BaseModel):
 class RedirectFact(BaseModel):
     __tablename__ = "redirect_fact"
 
-    id = Column(Integer, primary_key=True)
-    link_id = Column(Integer, ForeignKey("link.id"))
-    method = Column(String, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    link_id: Mapped[str] = mapped_column(ForeignKey("link.id"))
+    method: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
-    user_agent = Column(String, nullable=False)
+    user_agent: Mapped[str]
 
-    browser_family = Column(String)
-    browser_version = Column(String)
+    browser_family: Mapped[str | None]
+    browser_version: Mapped[str | None]
 
-    os_family = Column(String)
-    os_version = Column(String)
+    os_family: Mapped[str | None]
+    os_version: Mapped[str | None]
 
-    device_family = Column(String)
-    device_brand = Column(String)
-    device_model = Column(String)
+    device_family: Mapped[str | None]
+    device_brand: Mapped[str | None]
+    device_model: Mapped[str | None]
 
     link = relationship("Link", back_populates="redirects")

@@ -17,14 +17,16 @@ def create_route(secret: str, url_from: str, data: NewRedirectUrl):
         raise HTTPException(403, "Wrong secret")
     if db.session.query(Link).filter(Link.url_from == url_from).one_or_none():
         raise HTTPException(409, "Already exists")
-    redir_obj = Link(url_from=url_from, url_to=data.url_to)
+    redir_obj = Link()
+    redir_obj.url_from=url_from
+    redir_obj.url_to=str(data.url_to)
     db.session.add(redir_obj)
     db.session.commit()
     return "ok"
 
 
 @router.delete("/{secret}/url/{url_from:path}", status_code=204)
-def create_route(secret: str, url_from: str):
+def delete_route(secret: str, url_from: str):
     if secret != get_settings().SECRET:
         raise HTTPException(403, "Wrong secret")
     redir_obj = (

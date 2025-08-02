@@ -13,8 +13,8 @@ settings = get_settings()
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-fileConfig(config.config_file_name)
-target_metadata = BaseModel.metadata
+fileConfig(config.config_file_name)  # type: ignore
+target_metadata = BaseModel.metadata  # type: ignore
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -34,9 +34,8 @@ def run_migrations_offline():
     script output.
 
     """
-    url = settings.DB_DSN
     context.configure(
-        url=url,
+        url=str(settings.DB_DSN),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -53,8 +52,8 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    configuration = config.get_section(config.config_ini_section)
-    configuration['sqlalchemy.url'] = settings.DB_DSN
+    configuration: dict[str, str] = config.get_section(config.config_ini_section) or {}
+    configuration["sqlalchemy.url"] = str(settings.DB_DSN)
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",

@@ -1,10 +1,16 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11
-ENV APP_NAME=redirector
-ENV APP_MODULE=${APP_NAME}.main:app
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
-COPY ./requirements.txt /app/
-RUN pip install -r /app/requirements.txt
+ARG APP_NAME
+ENV APP_NAME=${APP_NAME}
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
 
-COPY ./alembic.ini /app/alembic.ini
-COPY ./migrations /app/migrations
-COPY ./${APP_NAME} /app/${APP_NAME}
+ENV UV_LINK_MODE=copy
+
+WORKDIR /apps
+ADD . /apps/
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --active --locked --no-install-project
+
+CMD python -m redirector
