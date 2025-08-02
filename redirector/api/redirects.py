@@ -2,6 +2,7 @@ import user_agents
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi_sqlalchemy import db
+from sqlalchemy import or_
 
 from redirector.models import Link, RedirectFact
 
@@ -33,9 +34,31 @@ def log_redirect(link_id, method, user_agent):
 def redirect(request: Request, url_from: str, background_tasks: BackgroundTasks):
     if url_from == "":
         return RedirectResponse("/ui/")
-    redir_obj = db.session.query(Link).filter(Link.url_from == url_from).one_or_none()
-    if not redir_obj:
+    possible_redirects = (
+        db.session.query(Link)
+        .filter(
+            or_(
+                Link.url_from == url_from,
+                Link.url_from == str(request.url),
+            )
+        )
+        .all()
+    )
+    final_redirect = None
+    if len(possible_redirects) == 0:
+        raise HTTPException(404, "Not found")
+    if len(possible_redirects) > 1:
+        for obj in possible_redirects:
+            if obj.url_from == str(request.url):
+                # Нашли домен-специфичный, дальше не ищем
+                final_redirect = obj
+                break
+            if obj.url_from == url_from:
+                # Нашли общий, но продолжаем искать домен-специфичный
+                final_redirect = obj
+
+    if final_redirect is None:
         raise HTTPException(404, "Not found")
 
-    background_tasks.add_task(log_redirect, redir_obj.id, request.method, request.headers["User-Agent"])
-    return RedirectResponse(redir_obj.url_to)
+    background_tasks.add_task(log_redirect, final_redirect.id, request.method, request.headers["User-Agent"])
+    return RedirectResponse(final_redirect.url_to)
