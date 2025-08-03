@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     # Настройки проверки токенов
     oidc_configuration_uri: AnyHttpUrl
     oidc_client_id: str
+    oidc_client_secret: str
 
     # Настройки разрешения прав
     oidc_admin_claim: str = "groups"

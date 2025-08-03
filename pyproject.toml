@@ -39,3 +39,17 @@ python_files = "*.py"
 target-version = "py313"
 line-length = 120
 indent-width = 4
+
+[tool.ruff.lint]
+select = [
+    # Pyflakes
+    "F",
+    # Pycodestyle
+    "E",
+    "W",
+    # isort
+    "I001",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
