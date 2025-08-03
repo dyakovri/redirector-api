@@ -23,6 +23,7 @@ def create_route(secret: str, url_from: str, data: NewRedirectUrl):
     redir_obj = Link()
     redir_obj.url_from = url_from
     redir_obj.url_to = str(data.url_to)
+    redir_obj.owner_id = 0
     db.session.add(redir_obj)
     db.session.commit()
     return "ok"
