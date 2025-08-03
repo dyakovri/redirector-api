@@ -1,6 +1,8 @@
 import logging
 from functools import lru_cache
+from typing import Annotated
 
+from annotated_types import LowerCase
 from pydantic import AnyHttpUrl
 from pydantic.networks import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -22,6 +24,9 @@ class Settings(BaseSettings):
     oidc_admin_claim: str = "groups"
     oidc_admin_claim_value: str = "redirector_admin"
 
+    allowed_domains: set[Annotated[str, LowerCase]] | None = None
+
+    # Legacy
     secret: str | None = None
 
 

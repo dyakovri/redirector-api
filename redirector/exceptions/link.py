@@ -7,3 +7,7 @@ class LinkNotFoundException(NotFoundException):
 
 class LinkAlreadyExistsException(NotFoundException):
     pass
+
+
+class LinkDomainNotAllowedException(Exception):
+    pass

@@ -19,7 +19,7 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@router.get("/auth")
+@router.get("/auth", status_code=307)
 async def token_request(
     request: Request,
 ):
@@ -68,7 +68,7 @@ async def add_user_to_db(user_claims: dict[str, Any]) -> User:
     return user
 
 
-@router.get("/redirect")
+@router.get("/redirect", status_code=307)
 async def token_redirect(
     request: Request,
     query: Annotated[AuthorizationCodeRedirectParams, Query()],

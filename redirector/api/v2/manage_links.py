@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from typing import Annotated
 
@@ -8,12 +9,15 @@ from pydantic import AnyHttpUrl, BaseModel, Field, TypeAdapter
 from typing_extensions import Doc
 
 from redirector.api.auth import AUTH_RESPONSES, AUTH_RESPONSES_AUTHENTICATION, ForbiddenException, User, is_admin
-from redirector.exceptions.link import LinkAlreadyExistsException, LinkNotFoundException
+from redirector.exceptions.link import LinkAlreadyExistsException, LinkDomainNotAllowedException, LinkNotFoundException
 from redirector.exceptions.user import UserNotFoundException
 from redirector.models import Link
 from redirector.models import User as DbUser
+from redirector.settings import get_settings
 
 router = APIRouter()
+settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 # GET
@@ -99,6 +103,23 @@ async def create_link(
     body: PostLinkRequest,
     user: User.authenticated,
 ) -> PostLinkResponse:
+    if not body.url_from.host:
+        raise ValueError()
+    if settings.allowed_domains is not None and not (
+        f"{body.url_from.scheme}://{body.url_from.host.lower()}" in settings.allowed_domains
+        or f"{body.url_from.scheme}://{body.url_from.host.lower()}:{body.url_from.port}" in settings.allowed_domains
+    ):
+        logger.debug(
+            "Domains %s://%s and %s://%s:%s are not in allowed domains: %s",
+            body.url_from.scheme,
+            body.url_from.host,
+            body.url_from.scheme,
+            body.url_from.host,
+            body.url_from.port,
+            settings.allowed_domains,
+        )
+        raise LinkDomainNotAllowedException(body.url_from.host.lower())
+
     new_link = db.session.query(Link).filter(Link.url_from == str(body.url_from)).one_or_none()
     current_user_id = db.session.query(DbUser).filter(DbUser.username == user.sub).one().id
 
