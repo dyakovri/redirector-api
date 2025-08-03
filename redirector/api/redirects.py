@@ -1,3 +1,5 @@
+import logging
+
 import user_agents
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -7,6 +9,7 @@ from sqlalchemy import or_
 from redirector.models import Link, RedirectFact
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 def log_redirect(link_id, method, user_agent):
@@ -32,6 +35,7 @@ def log_redirect(link_id, method, user_agent):
     status_code=307,
 )
 def redirect(request: Request, url_from: str, background_tasks: BackgroundTasks):
+    logger.debug("Current url: %s", str(request.url))
     if url_from == "":
         return RedirectResponse("/ui/")
     if url_from == "ui/":
@@ -46,18 +50,19 @@ def redirect(request: Request, url_from: str, background_tasks: BackgroundTasks)
         )
         .all()
     )
+    logger.debug("Possible redirects: %s", [(link.url_from, link.url_to) for link in possible_redirects])
     final_redirect = None
     if len(possible_redirects) == 0:
         raise HTTPException(404, "Not found")
-    if len(possible_redirects) > 1:
-        for obj in possible_redirects:
-            if obj.url_from == str(request.url):
-                # Нашли домен-специфичный, дальше не ищем
-                final_redirect = obj
-                break
-            if obj.url_from == url_from:
-                # Нашли общий, но продолжаем искать домен-специфичный
-                final_redirect = obj
+
+    for obj in possible_redirects:
+        if obj.url_from == str(request.url):
+            # Нашли домен-специфичный, дальше не ищем
+            final_redirect = obj
+            break
+        if obj.url_from == url_from:
+            # Нашли общий, но продолжаем искать домен-специфичный
+            final_redirect = obj
 
     if final_redirect is None:
         raise HTTPException(404, "Not found")
