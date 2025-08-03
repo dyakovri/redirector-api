@@ -248,7 +248,7 @@ wheels = [
 
 [[package]]
 name = "fastapi-auth-oidc"
-version = "0.1.4"
+version = "0.1.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
@@ -256,9 +256,9 @@ dependencies = [
     { name = "python-jose", extra = ["cryptography"] },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/37/e4/bd78fdd1881b9d29f035d0fb579c04307266fe901b13f678272a0cfe34b8/fastapi_auth_oidc-0.1.4.tar.gz", hash = "sha256:fea69c5d5eb93184cbb49897f49ec508c3d23609afbc234c780fea3e6bdfa4cb", size = 44378, upload-time = "2025-08-02T20:36:02.616Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8b/0d/568e12c35b65615c9fe47ebae0b36f8f8319d756a6ff679bd0dd007a09dd/fastapi_auth_oidc-0.1.5.tar.gz", hash = "sha256:f5e665ade5787408afba4b615d4fa572475ea8691b70585b79ea46830a8b0e76", size = 45587, upload-time = "2025-08-03T12:11:05.414Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/be/5e/33891cf20fb24a6dff0d9d1ae9b87c96b97ecee5431c15ffd9c075238e14/fastapi_auth_oidc-0.1.4-py3-none-any.whl", hash = "sha256:596aa2a9e61102e2389aa45c222cd538bc1705337d246da5aacd3d6b6b8b303d", size = 5728, upload-time = "2025-08-02T20:36:01.472Z" },
+    { url = "https://files.pythonhosted.org/packages/83/fb/e688b785d973408405d2ec92c1589c6b3a1ec45985b857253b4d6f5ae189/fastapi_auth_oidc-0.1.5-py3-none-any.whl", hash = "sha256:c3bd91460fc8e2dbd31794f881eb7329069ff30a3d9084d942246a81e73acd3c", size = 7168, upload-time = "2025-08-03T12:11:04.23Z" },
 ]
 
 [[package]]

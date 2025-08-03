@@ -22,9 +22,7 @@ async def token_request(
     request: Request,
 ):
     state = "".join(random.choice(string.ascii_letters) for i in range(32))
-    url = URL(
-        auth_user._settings.configuration.get("authorization_endpoint") or auth_user.authorization_endpoint
-    ).include_query_params(
+    url = URL(auth_user.authorization_endpoint).include_query_params(
         response_type="code",
         client_id=settings.oidc_client_id,
         redirect_uri=f"{request.url.scheme}://{request.url.netloc}/api/v2/oidc/redirect",
@@ -59,14 +57,10 @@ async def token_redirect(
         "client_id": settings.oidc_client_id,
         "client_secret": settings.oidc_client_secret,
     }
-    logger.debug(auth_user._settings.configuration.get("token_endpoint"))
-    logger.debug(token_request_data)
+    logger.debug("Request to %s for token", auth_user.token_endpoint)
     async with (
         ClientSession() as session,
-        session.post(
-            auth_user._settings.configuration.get("token_endpoint") or auth_user.token_endpoint,
-            data=token_request_data,
-        ) as response,
+        session.post(auth_user.token_endpoint, data=token_request_data) as response,
     ):
         token_data = await response.json()
     if "access_token" in token_data:
