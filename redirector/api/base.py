@@ -2,9 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_sqlalchemy import DBSessionMiddleware
 
-from redirector.settings import get_settings
 from redirector import __version__
-
+from redirector.settings import get_settings
 
 settings = get_settings()
 

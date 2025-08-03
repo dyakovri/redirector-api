@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from . import auth_exceptions
+from . import auth_exceptions  # noqa: F401
 from .base import app
 from .redirects import router as redirects_router
 from .v1 import router as api_v1_router

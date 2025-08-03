@@ -1,4 +1,5 @@
 import uvicorn
+
 from redirector.api import app
 
 

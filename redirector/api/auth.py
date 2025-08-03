@@ -6,7 +6,6 @@ from fastapi_auth_oidc.exceptions import InvalidCredentialsException, Unauthenti
 
 from redirector.settings import get_settings
 
-
 __all__ = ["InvalidCredentialsException", "UnauthenticatedException", "ForbiddenException", "User"]
 
 

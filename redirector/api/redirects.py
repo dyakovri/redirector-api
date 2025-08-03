@@ -34,6 +34,8 @@ def log_redirect(link_id, method, user_agent):
 def redirect(request: Request, url_from: str, background_tasks: BackgroundTasks):
     if url_from == "":
         return RedirectResponse("/ui/")
+    if url_from == "ui/":
+        return RedirectResponse("/api/docs")
     possible_redirects = (
         db.session.query(Link)
         .filter(

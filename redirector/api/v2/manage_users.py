@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 
-
 from redirector.api.auth import User
 
 router = APIRouter()
