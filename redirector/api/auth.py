@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated, NamedTuple
 
 from fastapi import Depends
@@ -6,9 +7,25 @@ from fastapi_auth_oidc.exceptions import InvalidCredentialsException, Unauthenti
 
 from redirector.settings import get_settings
 
-__all__ = ["InvalidCredentialsException", "UnauthenticatedException", "ForbiddenException", "User"]
+__all__ = [
+    "AUTH_RESPONSES",
+    "AUTH_RESPONSES_AUTHENTICATION",
+    "AUTH_RESPONSES_AUTHORIZATION",
+    "InvalidCredentialsException",
+    "UnauthenticatedException",
+    "ForbiddenException",
+    "User",
+]
 
 
+AUTH_RESPONSES_AUTHENTICATION = {401: {"description": "Client needs to log in or renew token"}}
+AUTH_RESPONSES_AUTHORIZATION = {403: {"description": "Client is authenticated but lacks the necessary permissions"}}
+AUTH_RESPONSES = {
+    **AUTH_RESPONSES_AUTHENTICATION,
+    **AUTH_RESPONSES_AUTHORIZATION,
+}
+
+logger = logging.getLogger(__name__)
 settings = get_settings()
 auth_user = OIDCProvider(
     configuration_uri=str(settings.oidc_configuration_uri),
@@ -28,12 +45,22 @@ def get_authenticated(user: TokenData):
     return user
 
 
-def get_is_admin(user: Annotated[IDToken, Depends(get_authenticated)]):
+def is_admin(user: IDToken):
     claim_value = user.model_dump().get(settings.oidc_admin_claim)
-    if (not isinstance(claim_value, list) and claim_value != settings.oidc_admin_claim_value) or (
-        isinstance(claim_value, list) and settings.oidc_admin_claim_value not in claim_value
-    ):
-        raise ForbiddenException(user, settings.oidc_admin_claim, claim_value, settings.oidc_admin_claim_value)
+    logger.debug(
+        "Claim `%s` value: %s (shoud be %s)",
+        settings.oidc_admin_claim,
+        claim_value,
+        settings.oidc_admin_claim_value,
+    )
+    return (isinstance(claim_value, list) and settings.oidc_admin_claim_value in claim_value) or (
+        not isinstance(claim_value, list) and settings.oidc_admin_claim_value == claim_value
+    )
+
+
+def get_is_admin(user: Annotated[IDToken, Depends(get_authenticated)]):
+    if is_admin(user):
+        raise ForbiddenException(user, settings.oidc_admin_claim, settings.oidc_admin_claim_value)
     return user
 
 

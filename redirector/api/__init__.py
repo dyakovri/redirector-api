@@ -4,6 +4,7 @@ from . import auth_exceptions  # noqa: F401
 from .base import app
 from .redirects import router as redirects_router
 from .v1 import router as api_v1_router
+from .v2 import manage_links_exceptions  # noqa: F401
 from .v2.manage_links import router as manage_links_router
 from .v2.manage_users import router as manage_users_router
 from .v2.token_exchange import router as token_exchange_router
