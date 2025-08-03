@@ -1,13 +1,15 @@
 from datetime import datetime
 from typing import Annotated
 
+from annotated_types import Gt, Le
 from fastapi import APIRouter, Query
 from fastapi_sqlalchemy import db
-from pydantic import AnyHttpUrl, BaseModel, TypeAdapter
+from pydantic import AnyHttpUrl, BaseModel, Field, TypeAdapter
 from typing_extensions import Doc
 
 from redirector.api.auth import AUTH_RESPONSES, AUTH_RESPONSES_AUTHENTICATION, ForbiddenException, User, is_admin
 from redirector.exceptions.link import LinkAlreadyExistsException, LinkNotFoundException
+from redirector.exceptions.user import UserNotFoundException
 from redirector.models import Link
 from redirector.models import User as DbUser
 
@@ -16,8 +18,13 @@ router = APIRouter()
 
 # GET
 class LinkRequest(BaseModel):
+    # Filter options
     my: Annotated[bool, Doc("Get only your links if you are an admin")] = False
     user: str | None = None
+
+    # Pagination options
+    date_from: Annotated[datetime, Doc("Next page will start from"), Field(default_factory=datetime.utcnow)]
+    limit: Annotated[int, Gt(0), Le(1000)] = 100
 
 
 class OwnerResponse(BaseModel):
@@ -37,6 +44,8 @@ class LinkResponse(BaseModel):
 
 class LinkListResponse(BaseModel):
     items: list[LinkResponse]
+    # Pagination
+    next_date_from: datetime | None
 
 
 @router.get(
@@ -47,21 +56,26 @@ async def get_links(
     query: Annotated[LinkRequest, Query()],
     user: User.authenticated,
 ) -> LinkListResponse:
-    links_request = db.session.query(Link)
+    links_request = db.session.query(Link).where(Link.created_at < query.date_from)
     user_is_admin = is_admin(user)
     query.my = query.my or not user_is_admin
 
     if query.my:
-        links_request = links_request.join(Link.owner).filter(DbUser.username == user.sub)
+        fiter_user = db.session.query(DbUser).filter(DbUser.username == user.sub).one()
+        links_request = links_request.filter(Link.owner_id == fiter_user.id)
 
     if query.user and user_is_admin:
-        links_request = links_request.join(Link.owner).filter(DbUser.username == query.user)
+        fiter_user = db.session.query(DbUser).filter(DbUser.username == query.user).one_or_none()
+        if not fiter_user:
+            raise UserNotFoundException(user)
+        links_request = links_request.filter(Link.owner_id == fiter_user.id)
     elif query.user:
         raise ForbiddenException(user)
 
-    links = links_request.all()
+    links = links_request.order_by(Link.created_at.desc()).limit(query.limit).all()
     return LinkListResponse(
         items=TypeAdapter(list[LinkResponse]).validate_python(links, from_attributes=True),
+        next_date_from=links[-1].created_at if len(links) == query.limit else None,
     )
 
 
