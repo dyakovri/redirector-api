@@ -1,14 +1,13 @@
-from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 
-from redirector.api.auth import IDToken, auth_user
+from redirector.api.auth import User
 
 router = APIRouter()
 
 
 @router.get("/me")
 def get_me(
-    user: Annotated[IDToken | None, Depends(auth_user)],
+    user: User.authenticated,
 ):
     return user.model_dump() if user else {}

@@ -13,8 +13,13 @@ class Settings(BaseSettings):
 
     db_dsn: PostgresDsn = PostgresDsn("postgresql://postgres@postgres:5432/postgres")
 
+    # Настройки проверки токенов
     oidc_configuration_uri: AnyHttpUrl
     oidc_client_id: str
+
+    # Настройки разрешения прав
+    oidc_admin_claim: str = "groups"
+    oidc_admin_claim_value: str = "redirector_admin"
 
     secret: str | None = None
 

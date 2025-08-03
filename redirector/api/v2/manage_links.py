@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Query
 from fastapi_sqlalchemy import db
 from pydantic import AnyHttpUrl, BaseModel, TypeAdapter
 
-from redirector.api.auth import IDToken, auth_user
+from redirector.api.auth import User
 from redirector.exceptions.link import LinkAlreadyExistsException, LinkNotFoundException
 from redirector.models import Link
 
@@ -32,10 +32,8 @@ class LinkListResponse(BaseModel):
 @router.get("")
 async def get_links(
     query: Annotated[LinkRequest, Query()],
-    user: Annotated[IDToken | None, Depends(auth_user)],
+    user: User.authenticated,
 ) -> LinkListResponse:
-    if not user:
-        raise Exception("Unauthorized")
     links = db.session.query(Link).all()
     return LinkListResponse(
         items=TypeAdapter(list[LinkResponse]).validate_python(links, from_attributes=True),
@@ -53,19 +51,17 @@ class PostLinkResponse(LinkResponse):
     pass
 
 
-@router.put("")
+@router.put("", status_code=201)
 async def create_link(
-    json: PostLinkRequest,
-    user: Annotated[IDToken | None, Depends(auth_user)],
+    body: PostLinkRequest,
+    user: User.authenticated,
 ) -> PostLinkResponse:
-    if not user:
-        raise Exception("Unauthorized")
-    new_link = db.session.query(Link).filter(Link.url_from == str(json.url_from)).one_or_none()
-    if new_link is not None and not json.force:
-        raise LinkAlreadyExistsException(json.url_from)
+    new_link = db.session.query(Link).filter(Link.url_from == str(body.url_from)).one_or_none()
+    if new_link is not None and not body.force:
+        raise LinkAlreadyExistsException(body.url_from)
     new_link = new_link or Link()
-    new_link.url_from = str(json.url_from)
-    new_link.url_to = str(json.url_to)
+    new_link.url_from = str(body.url_from)
+    new_link.url_to = str(body.url_to)
     db.session.add(new_link)
     db.session.commit()
     return PostLinkResponse.model_validate(new_link, from_attributes=True)
@@ -78,14 +74,12 @@ class DeleteLinkRequest(BaseModel):
 
 @router.delete("", status_code=204)
 async def delete_link(
-    json: DeleteLinkRequest,
-    user: Annotated[IDToken | None, Depends(auth_user)],
+    body: DeleteLinkRequest,
+    user: User.authenticated,
 ):
-    if not user:
-        raise Exception("Unauthorized")
-    link = db.session.query(Link).filter(Link.url_from == str(json.url_from)).one_or_none()
+    link = db.session.query(Link).filter(Link.url_from == str(body.url_from)).one_or_none()
     if not link:
-        raise LinkNotFoundException(json.url_from)
+        raise LinkNotFoundException(body.url_from)
     db.session.delete(link)
     db.session.commit()
     return
